@@ -44,6 +44,69 @@ jobs:
           echo "Waiting for PostgreSQL..."
           sleep 2
         done
+
+    - name: Create raw tables for testing
+      run: |
+        psql -U airflow -d nomba_warehouse -c "
+        CREATE TABLE IF NOT EXISTS raw_users (
+            _id TEXT PRIMARY KEY,
+            uid TEXT,
+            first_name TEXT,
+            last_name TEXT,
+            occupation TEXT,
+            state TEXT,
+            loaded_at TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS raw_savings_plan (
+            plan_id TEXT PRIMARY KEY,
+            product_type TEXT,
+            customer_uid TEXT,
+            amount NUMERIC,
+            frequency TEXT,
+            start_date DATE,
+            end_date DATE,
+            status TEXT,
+            created_at TIMESTAMP,
+            updated_at TIMESTAMP,
+            deleted_at TIMESTAMP,
+            loaded_at TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS raw_savings_transaction (
+            txn_id TEXT PRIMARY KEY,
+            plan_id TEXT,
+            amount NUMERIC,
+            currency TEXT,
+            side TEXT,
+            rate NUMERIC,
+            txn_timestamp TIMESTAMP,
+            updated_at TIMESTAMP,
+            deleted_at TIMESTAMP,
+            loaded_at TIMESTAMP
+        );
+        
+        CREATE TABLE IF NOT EXISTS sync_state (
+            source_name TEXT PRIMARY KEY,
+            last_sync_timestamp TIMESTAMP,
+            last_sync_id TEXT
+        );
+        "
+
+    - name: Insert sample data
+      run: |
+        psql -U airflow -d nomba_warehouse -c "
+        INSERT INTO raw_users (_id, uid, first_name, last_name, occupation, state, loaded_at) VALUES 
+        ('test_001', 'user_001', 'John', 'Doe', 'Engineer', 'Lagos', NOW()),
+        ('test_002', 'user_002', 'Jane', 'Smith', 'Teacher', 'Abuja', NOW());
+        
+        INSERT INTO raw_savings_plan (plan_id, product_type, customer_uid, amount, frequency, start_date, end_date, status, created_at, updated_at, deleted_at, loaded_at) VALUES 
+        ('plan_001', 'fixed_deposit', 'user_001', 500000.00, 'monthly', '2024-01-01', '2024-12-31', 'active', NOW(), NOW(), NULL, NOW());
+        
+        INSERT INTO raw_savings_transaction (txn_id, plan_id, amount, currency, side, rate, txn_timestamp, updated_at, deleted_at, loaded_at) VALUES 
+        ('txn_001', 'plan_001', 50000.00, 'NGN', 'buy', 1.0, NOW(), NOW(), NULL, NOW());
+        "  
+
     - name: Debug environment
       run: |
         echo "DBT_HOST: $DBT_HOST"
