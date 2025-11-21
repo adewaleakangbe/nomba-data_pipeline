@@ -44,6 +44,12 @@ jobs:
           echo "Waiting for PostgreSQL..."
           sleep 2
         done
+    - name: Debug environment
+      run: |
+        echo "DBT_HOST: $DBT_HOST"
+        echo "DBT_PORT: $DBT_PORT"
+        echo "Current directory: $(pwd)"
+        ls -la dbt/nomba_dbt/
 
     - name: Run dbt commands
       env:
@@ -56,11 +62,11 @@ jobs:
       run: |
         cd dbt/nomba_dbt
         
-        # Test connection
-        dbt debug
+        # Test connection - MUST use CI target
+        dbt debug --target ci
         
-        # Run models
-        dbt run
+        # Run models - MUST use CI target  
+        dbt run --target ci
         
-        # Run tests
-        dbt test
+        # Run tests - MUST use CI target
+        dbt test --target ci
