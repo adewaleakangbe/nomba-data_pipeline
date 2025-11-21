@@ -1,0 +1,66 @@
+name: Run dbt CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  dbt-ci:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: airflow
+          POSTGRES_PASSWORD: airflow
+          POSTGRES_DB: nomba_warehouse
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dbt and dependencies
+      run: |
+        pip install dbt-postgres
+
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        until pg_isready -h localhost -p 5432; do
+          echo "Waiting for PostgreSQL..."
+          sleep 2
+        done
+
+    - name: Run dbt commands
+      env:
+        DBT_HOST: localhost
+        DBT_PORT: 5432
+        DBT_USER: airflow
+        DBT_PASS: airflow
+        DBT_DBNAME: nomba_warehouse
+        DBT_SCHEMA: public
+      run: |
+        cd dbt/nomba_dbt
+        
+        # Test connection
+        dbt debug
+        
+        # Run models
+        dbt run
+        
+        # Run tests
+        dbt test

@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: public
+    tables:
+      - name: raw_users
+      - name: raw_savings_plan
+      - name: raw_savings_transaction

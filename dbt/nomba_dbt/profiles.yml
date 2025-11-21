@@ -1,0 +1,22 @@
+nomba_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: postgres  # Docker environment
+      port: 5432
+      user: airflow
+      pass: airflow
+      dbname: nomba_warehouse
+      schema: public
+      threads: 4
+    
+    ci:
+      type: postgres
+      host: "{{ env_var('DBT_HOST', 'localhost') }}"  # CI environment
+      port: "{{ env_var('DBT_PORT', '5432') | int }}"
+      user: "{{ env_var('DBT_USER', 'airflow') }}"
+      pass: "{{ env_var('DBT_PASS', 'airflow') }}"
+      dbname: "{{ env_var('DBT_DBNAME', 'nomba_warehouse') }}"
+      schema: "{{ env_var('DBT_SCHEMA', 'public') }}"
+      threads: 4

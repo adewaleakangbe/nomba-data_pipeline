@@ -1,0 +1,18 @@
+# Airflow
+logs/
+plugins/
+__pycache__/
+*.pyc
+.env
+
+# dbt
+dbt/nomba_dbt/target/
+dbt/nomba_dbt/dbt_packages/
+dbt/nomba_dbt/logs/
+
+# Docker
+data/
+
+# OS
+.DS_Store
+Thumbs.db
