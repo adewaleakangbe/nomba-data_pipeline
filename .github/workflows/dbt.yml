@@ -45,12 +45,16 @@ jobs:
           sleep 2
         done
     - name: Setup PostgreSQL database and user
+      env:
+        PGPASSWORD: airflow
       run: |
         psql -h localhost -p 5432 -U postgres -c "CREATE USER airflow WITH PASSWORD 'airflow';"
         psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE nomba_warehouse;"
         psql -h localhost -p 5432 -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE nomba_warehouse TO airflow;"      
 
     - name: Create raw tables for testing
+      env:
+        PGPASSWORD: airflow
       run: |
         psql -h localhost -p 5432 -U airflow -d nomba_warehouse -c"
         CREATE TABLE IF NOT EXISTS raw_users (
@@ -99,6 +103,8 @@ jobs:
         "
 
     - name: Insert sample data
+      env:
+        PGPASSWORD: airflow
       run: |
         psql -h localhost -p 5432 -U airflow -d nomba_warehouse -c"
         INSERT INTO raw_users (_id, uid, first_name, last_name, occupation, state, loaded_at) VALUES 
